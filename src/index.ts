@@ -1,77 +1,152 @@
-window.addEventListener('DOMContentLoaded',()=>{
-    const canva = document.getElementById('canvas') as HTMLCanvasElement;
+const canvas = document.getElementById('canvas') as HTMLCanvasElement;
+const ctx = canvas.getContext('2d')!;
+const inputsContainer = document.getElementById('inputsContainer')!;
+const cantidadBarras = document.getElementById('barraCantidad') as HTMLInputElement;
 
+const colores = ['#00BFFF', '#9ACD32', '#FF1493', '#FFA500']; // Puedes mantener o quitar
+let valores: number[] = [];
 
-    // declaramos que trabajaremos en 2d
-    const ctx = canva.getContext('2d');
-    if (!ctx) return;//
+document.getElementById('btn_generar')?.addEventListener('click', () => { // Creamos el evento del boton
+    const cantidad = parseInt(cantidadBarras.value);// tranformamos la cantidad de columnas en un Int
 
-   const columas = 4;// cantidad de columnas
-   const filas = 3; // cantidad de filas
-
-    const startX = 50; // punto inicial en X
-    const startY = 50; // punto inicial en Y
-    const cellSize = 60; // tamaño entre celdas
-    //Para los puntos
-    ctx.font = '12px Arial';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    //para las lineas
-    ctx.strokeStyle = '#888';
-    ctx.lineWidth = 1;
-    
-    //digujaremos las lineas
-    for (let i = 0; i < columas; i++) {
-        const x = startX + i * cellSize;
-        ctx.beginPath();
-        ctx.moveTo(x, startY);
-        ctx.lineTo(x, startY + filas * cellSize);
-        ctx.stroke();
+    if (isNaN(cantidad) || cantidad <= 0) {//Verificamos si estas son numeros positivos
+        return alert('====ERROR==== Ingrese valores mayores a 0');
     }
 
-    // Líneas horizontales
-    for (let j = 0; j < filas; j++) {
-        const y = startY + j * cellSize;
-        ctx.beginPath();
-        ctx.moveTo(startX, y);
-        ctx.lineTo(startX + columas * cellSize, y);
-        ctx.stroke();
+    inputsContainer.innerHTML = '';
+    valores = new Array(cantidad).fill(0);
+
+    // Solo genera barras blancas sin pintar con valores
+    //generarBarrasEnBlanco(cantidad);
+
+    for (let i = 0; i < cantidad; i++) {
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.min = '0';
+        input.max = '100';
+        input.value = '0';
+        input.style.marginRight = '5px';
+
+        input.addEventListener('input', () => {
+            const val = Math.min(100, Math.max(0, parseInt(input.value) || 0));
+            valores[i] = val;
+            pintarBarras(valores);
+        });
+
+        inputsContainer.appendChild(document.createTextNode(`Barra ${i + 1}: `));
+        inputsContainer.appendChild(input);
     }
-
-    //Creamos un ciclo en el cual dibujaremos los puntos y coordenadas 
-   for (let i = 0; i < filas; i++) {
-        for (let j = 0; j < columas; j++) {
-            const x = startX + j * cellSize;
-            const y = startY + i * cellSize;
-
-            //Dibujar el punto
-            ctx.beginPath();
-            ctx.arc(x, y, 6, 0, 2 * Math.PI);
-            ctx.fillStyle = 'black';
-            ctx.fill();
-
-            //coodernada
-            const labelX = 5 + j;
-            const labelY = 4 - i + 1; // para que el eje Y esté de arriba a abajo como en la imagen
-            ctx.fillText(`(${labelX}, ${labelY})`, x, y - 15); // texto arriba del punto
-            
-        }
-    
-   }
-
-    // === ETIQUETAS DE LOS EJES === Esta parte fue consultada a ChatGPT
-    ctx.fillStyle = 'black';
-
-    // Eje X
-    for (let i = 0; i < columas; i++) {
-        const x = startX + i * cellSize + cellSize / 2;
-        ctx.fillText(`${5 + i}.0`, x, startY + filas * cellSize + 20);
-    }
-
-    // Eje Y
-    for (let j = 0; j < filas; j++) {
-        const y = startY + j * cellSize + cellSize / 2;
-        ctx.fillText(`${14 - j}.0`, startX - 30, y);
-    }
-   
+    pintarBarras(valores);
 });
+/**
+ * 
+ * No funciona la funcion, no genera nada, por mas que quise ahcer modificaciones 
+ 
+function generarBarrasEnBlanco(cantidad: number) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+
+    const anchoBarra = 40;
+    const espacio = 20;
+    const altoMax = 400;
+    const baseY = canvas.height - 40;
+    const profundidad = 20;
+
+    for (let i = 0; i < cantidad; i++) {
+        const x = 50 + i * (anchoBarra + espacio);
+        const frenteX = x;
+        const frenteY = baseY - altoMax;
+
+        // Fondo blanco máximo
+        ctx.fillStyle = "#f0f0f0";
+        ctx.fillRect(frenteX, frenteY, anchoBarra, altoMax);
+
+        // Cara superior blanca
+        ctx.beginPath();
+        ctx.moveTo(frenteX, frenteY);
+        ctx.lineTo(frenteX - profundidad, frenteY - profundidad);
+        ctx.lineTo(frenteX + anchoBarra - profundidad, frenteY - profundidad);
+        ctx.lineTo(frenteX + anchoBarra, frenteY);
+        ctx.closePath();
+        ctx.fillStyle = "#e0e0e0";
+        ctx.fill();
+
+        // Cara lateral blanca
+        ctx.beginPath();
+        ctx.moveTo(frenteX, frenteY);
+        ctx.lineTo(frenteX - profundidad, frenteY - profundidad);
+        ctx.lineTo(frenteX - profundidad, baseY - profundidad);
+        ctx.lineTo(frenteX, baseY);
+        ctx.closePath();
+        ctx.fillStyle = "#d0d0d0";
+        ctx.fill();
+        
+    }
+}
+*/
+function pintarBarras(porcentajes: number[]) {
+    
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const anchoBarra = 40;
+    const espacio = 20;
+    const altoMax = 400;
+    const baseY = canvas.height - 40;
+    const profundidad = 20; // profundidad en "3D"
+
+    
+
+    porcentajes.forEach((porc, i) => {
+        const x = 50 + i * (anchoBarra + espacio);
+        const h = (porc / 100) * altoMax;
+        const color = colores[i % colores.length];
+
+        const frenteX = x;
+        const frenteY = baseY - h;
+
+        // === 1. Cara frontal ===
+        ctx.fillStyle = color;
+        ctx.fillRect(frenteX, frenteY, anchoBarra, h);
+
+        // === 2. Cara superior ===
+        ctx.beginPath();
+        ctx.moveTo(frenteX, frenteY);
+        ctx.lineTo(frenteX - profundidad, frenteY - profundidad);
+        ctx.lineTo(frenteX + anchoBarra - profundidad, frenteY - profundidad);
+        ctx.lineTo(frenteX + anchoBarra, frenteY);
+        ctx.closePath();
+        ctx.fillStyle = aclararColor(color, 0.3);
+        ctx.fill();
+
+        // === 3. Cara lateral ===
+        ctx.beginPath();
+        ctx.moveTo(frenteX, frenteY);
+        ctx.lineTo(frenteX - profundidad, frenteY - profundidad);
+        ctx.lineTo(frenteX - profundidad, frenteY + h - profundidad);
+        ctx.lineTo(frenteX, frenteY + h);
+        ctx.closePath();
+        ctx.fillStyle = oscurecerColor(color, 0.3);
+        ctx.fill();
+
+        // Texto del %
+        ctx.fillStyle = color;
+        ctx.font = 'bold 28px Poppins';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${porc}%`, x + anchoBarra / 2, baseY + 35);
+    });
+
+    function aclararColor(hex: string, factor: number): string {
+        const r = Math.min(255, parseInt(hex.slice(1, 3), 16) + 255 * factor);
+        const g = Math.min(255, parseInt(hex.slice(3, 5), 16) + 255 * factor);
+        const b = Math.min(255, parseInt(hex.slice(5, 7), 16) + 255 * factor);
+        return `rgb(${r}, ${g}, ${b})`;
+    }
+
+    function oscurecerColor(hex: string, factor: number): string {
+        const r = Math.max(0, parseInt(hex.slice(1, 3), 16) * (1 - factor));
+        const g = Math.max(0, parseInt(hex.slice(3, 5), 16) * (1 - factor));
+        const b = Math.max(0, parseInt(hex.slice(5, 7), 16) * (1 - factor));
+        return `rgb(${r}, ${g}, ${b})`;
+    }
+
+}
